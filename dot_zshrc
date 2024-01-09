@@ -1,0 +1,45 @@
+# Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
+# Initialization code that may require console input (password prompts, [y/n]
+# confirmations, etc.) must go above this block; everything else may go below.
+if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+fi
+
+# Download Znap, if it's not there yet.
+[[ -r ~/.config/znap/znap/znap.zsh ]] ||
+    git clone --depth 1 -- \
+        https://github.com/marlonrichert/zsh-snap.git ~/.config/znap/znap
+source ~/.config/znap/znap/znap.zsh  # Start Znap
+
+znap source ohmyzsh/ohmyzsh
+
+znap source ohmyzsh/ohmyzsh plugins/brew
+znap source ohmyzsh/ohmyzsh plugins/colored-man-pages
+znap source ohmyzsh/ohmyzsh plugins/command-not-found
+znap source ohmyzsh/ohmyzsh plugins/common-aliases
+znap source ohmyzsh/ohmyzsh plugins/fzf
+znap source ohmyzsh/ohmyzsh plugins/sudo
+znap source ohmyzsh/ohmyzsh plugins/docker
+
+znap source zsh-users/zsh-autosuggestions
+znap source zsh-users/zsh-syntax-highlighting
+
+znap prompt romkatv/powerlevel10k
+
+# User configuration
+
+export LANG=en_US.UTF-8
+export EDITOR="vim"
+
+alias zshconfig="$EDITOR ~/.zshrc"
+
+export PATH="$HOME/go/bin:$PATH"
+export PATH="$HOME/.local/bin:$PATH"
+export PATH="/usr/local/go/bin:$PATH"
+
+which mise && znap eval _mise "mise activate zsh"
+test -e "$HOME/.shell/common.zsh" && source "$HOME/.shell/common.zsh"
+test -e "$HOME/.shell/local.zsh" && source "$HOME/.shell/local.zsh"
+
+# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
+[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh

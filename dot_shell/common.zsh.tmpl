@@ -1,0 +1,63 @@
+alias copy="it2copy"
+alias kaf="kubectl apply -f"
+alias pg="pgcli"
+alias reload="source ~/.zshrc"
+
+{{ if eq .chezmoi.os "darwin" }}
+znap eval brew-shellenv '/opt/homebrew/bin/brew shellenv'
+
+export BREW_PREFIX="$(brew --prefix)"
+export FPATH="${BREW_PREFIX}/share/zsh/site-functions:${FPATH}"
+
+alias code="/Applications/Visual\ Studio\ Code.app/Contents/MacOS/Electron"
+
+# brew install
+function bip() {
+  local inst=`brew search "$@" | fzf -m`
+
+  if [[ $inst ]]; then
+    for prog in `echo $inst`;
+    do; brew install $prog; done;
+  fi
+}
+
+# brew update
+function bup() {
+  local upd=`brew leaves | fzf -m`
+
+  if [[ $upd ]]; then
+    for prog in `echo $upd`;
+    do; brew upgrade $prog; done;
+  fi
+}
+
+function fdns() {
+  sudo dscacheutil -flushcache; sudo killall -HUP mDNSResponder
+}
+{{- end }}
+
+export CARGO_UNSTABLE_SPARSE_REGISTRY=true
+
+# fshow - git commit browser
+function fshow() {
+  git log --graph --color=always \
+      --format="%C(auto)%h%d %s %C(black)%C(bold)%cr" "$@" |
+  fzf --ansi --no-sort --reverse --tiebreak=index --bind=ctrl-s:toggle-sort \
+      --bind "ctrl-m:execute:
+                (grep -o '[a-f0-9]\{7\}' | head -1 |
+                xargs -I % sh -c 'git show --color=always % | less -R') << 'FZF-EOF'
+                {}
+FZF-EOF"
+}
+
+function gnb {
+  git fetch
+  git switch -c "rnikitin/$1" origin/master
+  git branch --unset-upstream
+}
+
+function gnbb {
+  git fetch
+  git switch -c "pomo/$1" origin/master
+  git branch --unset-upstream
+}
