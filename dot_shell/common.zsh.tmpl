@@ -2,6 +2,7 @@ alias copy="it2copy"
 alias kaf="kubectl apply -f"
 alias pg="pgcli"
 alias reload="source ~/.zshrc"
+alias gsave="git add . && git commit -m 'save'"
 
 {{ if eq .chezmoi.os "darwin" }}
 znap eval brew-shellenv '/opt/homebrew/bin/brew shellenv'
