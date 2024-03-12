@@ -33,7 +33,7 @@ export EDITOR="vim"
 
 alias zshconfig="$EDITOR ~/.zshrc"
 
-export PATH="$HOME/go/bin:$PATH"
+export PATH="$GOBIN:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
 export PATH="/usr/local/go/bin:$PATH"
 
