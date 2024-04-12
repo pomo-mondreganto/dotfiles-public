@@ -33,11 +33,14 @@ export EDITOR="vim"
 
 alias zshconfig="$EDITOR ~/.zshrc"
 
-export PATH="$GOBIN:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
 export PATH="/usr/local/go/bin:$PATH"
 
 which mise && znap eval _mise "mise activate zsh"
+
+# GOBIN is set by mise eval
+export PATH="$GOBIN:$PATH"
+
 test -e "$HOME/.shell/common.zsh" && source "$HOME/.shell/common.zsh"
 test -e "$HOME/.shell/local.zsh" && source "$HOME/.shell/local.zsh"
 
