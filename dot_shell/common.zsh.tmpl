@@ -62,3 +62,7 @@ function gnbb {
   git switch -c "pomo/$1" origin/master
   git branch --unset-upstream
 }
+
+function gcb {
+  git checkout $(git branch --sort=-commiterdate | fzf)
+}
