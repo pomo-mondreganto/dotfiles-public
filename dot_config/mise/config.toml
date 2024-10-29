@@ -4,7 +4,6 @@ go = "latest"
 golangci-lint = "latest"
 bottom = "latest"
 bat = "latest"
-ag = "latest"
 buf = "latest"
 ripgrep = "latest"
 
