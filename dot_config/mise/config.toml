@@ -9,5 +9,5 @@ buf = "latest"
 ripgrep = "latest"
 
 [settings]
-http_timeout = 60
+http_timeout = "60"
 experimental = true
