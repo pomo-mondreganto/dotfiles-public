@@ -1,0 +1,13 @@
+[tools]
+node = "lts"
+go = "latest"
+golangci-lint = "latest"
+bottom = "latest"
+bat = "latest"
+ag = "latest"
+buf = "latest"
+ripgrep = "latest"
+
+[settings]
+http_timeout = 60
+experimental = true
