@@ -21,6 +21,7 @@ znap source ohmyzsh/ohmyzsh plugins/fzf
 znap source ohmyzsh/ohmyzsh plugins/sudo
 znap source ohmyzsh/ohmyzsh plugins/docker
 
+znap source zsh-users/zsh-completions
 znap source zsh-users/zsh-autosuggestions
 znap source zsh-users/zsh-syntax-highlighting
 
