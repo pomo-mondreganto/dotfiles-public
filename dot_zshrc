@@ -29,8 +29,6 @@ znap source Aloxaf/fzf-tab
 
 znap prompt romkatv/powerlevel10k
 
-compinit
-
 # User configuration
 
 export LANG=en_US.UTF-8
