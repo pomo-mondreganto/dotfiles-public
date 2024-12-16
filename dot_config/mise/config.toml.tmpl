@@ -2,7 +2,7 @@
 go = "latest"
 ripgrep = "latest"
 
-{{ if .dev_machine }}
+{{ if index . "dev_machine" }}
 golangci-lint = "latest"
 buf = "latest"
 bat = "latest"
