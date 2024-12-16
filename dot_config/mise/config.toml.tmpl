@@ -1,0 +1,23 @@
+[tools]
+go = "latest"
+ripgrep = "latest"
+
+{{ if .dev_machine }}
+golangci-lint = "latest"
+buf = "latest"
+bat = "latest"
+bottom = "latest"
+node = "lts"
+ag = "latest"
+gofumpt = "latest"
+k9s = "latest"
+kubectl = "latest"
+{{ end }}
+
+{{ if eq .chezmoi.os "linux" }}
+python = "latest"
+{{ end }}
+
+
+[settings]
+http_timeout = 60
