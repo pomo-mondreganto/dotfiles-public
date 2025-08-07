@@ -1,21 +1,20 @@
 [tools]
 go = "latest"
 ripgrep = "latest"
+"aqua:rossmacarthur/sheldon" = "latest"
+python = "3.13"
+bat = "latest"
+bottom = "latest"
 
 {{ if index . "dev_machine" }}
 golangci-lint = "latest"
 buf = "latest"
-bat = "latest"
-bottom = "latest"
-node = "lts"
-gofumpt = "latest"
 k9s = "latest"
 kubectl = "latest"
-{{ end }}
-
-{{ if eq .chezmoi.os "linux" }}
-python = "latest"
+"aqua:int128/kubelogin" = "latest"
 {{ end }}
 
 [settings]
 http_timeout = "60"
+experimental = true
+idiomatic_version_file_enable_tools = ["node"]
