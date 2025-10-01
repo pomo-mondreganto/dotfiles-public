@@ -11,13 +11,17 @@ golangci-lint = "latest"
 buf = "latest"
 k9s = "latest"
 kubectl = "latest"
-"aqua:int128/kubelogin" = "latest"
 gdu = "latest"
-talos = "latest"
-"aqua:siderolabs/omni/omnictl" = "latest"
 crane = "latest"
 yq = "latest"
 dive = "latest"
+uv = "latest"
+{{ end }}
+
+{{ if index . "talos_enable" }}
+talos = "latest"
+"aqua:siderolabs/omni/omnictl" = "latest"
+"aqua:int128/kubelogin" = "latest"
 {{ end }}
 
 [settings]
