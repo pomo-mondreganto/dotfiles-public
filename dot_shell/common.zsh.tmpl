@@ -66,3 +66,24 @@ function gnbb {
 function gcb {
   git checkout $(git branch --sort=-committerdate $@ | fzf)
 }
+
+gnw () {
+  set -euo pipefail
+  local name="$1"
+  local repo="${2:-$HOME/repos/dm}"
+  local dir="${3:-$HOME/work/$name}"
+  local branch="rnikitin/$name"
+
+  (cd "$repo" && git fetch origin)
+
+  git -C "$repo" worktree add -b "$branch" "$dir" origin/master
+
+  # Keep behavior consistent with gnb: no upstream right after creation.
+  git -C "$dir" branch --unset-upstream >/dev/null 2>&1 || true
+
+  echo "Worktree: $dir"
+  echo "Branch:   $branch"
+  echo "To create remote + set tracking:"
+  echo "  (cd \"$dir\" && git push -u origin \"$branch\")"
+}
+
