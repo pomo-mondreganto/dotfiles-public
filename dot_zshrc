@@ -5,47 +5,57 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
 
-# Download Znap, if it's not there yet.
-[[ -r ~/.config/znap/znap/znap.zsh ]] ||
-    git clone --depth 1 -- \
-        https://github.com/marlonrichert/zsh-snap.git ~/.config/znap/znap
-source ~/.config/znap/znap/znap.zsh  # Start Znap
+# Autoloads + keymap previously provided by the OMZ base lib. Must happen
+# before sheldon sources fzf / fzf-tab so their bindings land in the emacs
+# keymap rather than being orphaned in vi's.
+autoload -Uz colors && colors
+autoload -Uz is-at-least
+bindkey -e
 
-znap source ohmyzsh/ohmyzsh
+# mise shims must be on PATH before the plugin manager runs (sheldon is
+# installed via `mise use -g aqua:rossmacarthur/sheldon`).
+export PATH="$HOME/.local/share/mise/shims:$HOME/.local/bin:/usr/local/go/bin:$PATH"
 
-znap source ohmyzsh/ohmyzsh plugins/brew
-znap source ohmyzsh/ohmyzsh plugins/colored-man-pages
-znap source ohmyzsh/ohmyzsh plugins/command-not-found
-znap source ohmyzsh/ohmyzsh plugins/common-aliases
-znap source ohmyzsh/ohmyzsh plugins/fzf
-znap source ohmyzsh/ohmyzsh plugins/sudo
-znap source ohmyzsh/ohmyzsh plugins/docker
+# zcache: cached `eval "$(cmd)"` helper (replacement for znap eval).
+# Defines the `zcache` function; see ~/.shell/eval-cache.zsh for usage.
+test -e "$HOME/.shell/eval-cache.zsh" && source "$HOME/.shell/eval-cache.zsh"
 
-znap source zsh-users/zsh-completions
-znap source zsh-users/zsh-autosuggestions
-znap source zsh-users/zsh-syntax-highlighting
+# mise shell integration: gives us mise's chpwd/precmd hooks and its
+# `command_not_found_handler` (auto-install from .mise.toml). The cache
+# is invalidated whenever the mise binary is upgraded.
+(( ${+commands[mise]} )) && zcache mise-activate 'mise activate zsh' ${commands[mise]}
 
-znap source Aloxaf/fzf-tab
+# Plugin manager: sheldon. We cache `sheldon source`'s output to a plain
+# zsh script and only regenerate it when ~/.config/sheldon/plugins.toml
+# is newer. Steady-state startup then avoids forking the sheldon binary.
+_sheldon_conf="${XDG_CONFIG_HOME:-$HOME/.config}/sheldon/plugins.toml"
+_sheldon_cache="${XDG_CACHE_HOME:-$HOME/.cache}/sheldon.zsh"
+if (( ${+commands[sheldon]} )); then
+  if [[ ! -s $_sheldon_cache || $_sheldon_conf -nt $_sheldon_cache ]]; then
+    mkdir -p -- ${_sheldon_cache:h}
+    sheldon source 2>/dev/null >| $_sheldon_cache
+  fi
+  source $_sheldon_cache
+fi
+unset _sheldon_conf _sheldon_cache
 
-znap prompt romkatv/powerlevel10k
-
-# User configuration
+# User configuration.
 
 export LANG=en_US.UTF-8
 export EDITOR="vim"
 
 alias zshconfig="$EDITOR ~/.zshrc"
 
-export PATH="$HOME/.local/bin:$PATH"
-export PATH="/usr/local/go/bin:$PATH"
-
-which mise && znap eval _mise "mise activate zsh"
-
-# GOBIN is set by mise eval
-export PATH="$GOBIN:$PATH"
+# GOBIN comes from mise; fall back to Go's default if unset.
+export PATH="${GOBIN:-$HOME/go/bin}:$PATH"
 
 test -e "$HOME/.shell/common.zsh" && source "$HOME/.shell/common.zsh"
 test -e "$HOME/.shell/local.zsh" && source "$HOME/.shell/local.zsh"
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+
+# bun
+[ -s "$HOME/.bun/_bun" ] && source "$HOME/.bun/_bun"
+export BUN_INSTALL="$HOME/.bun"
+export PATH="$BUN_INSTALL/bin:$PATH"

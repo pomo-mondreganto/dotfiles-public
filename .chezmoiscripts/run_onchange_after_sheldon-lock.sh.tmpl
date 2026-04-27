@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+# This script runs via chezmoi whenever dot_config/sheldon/plugins.toml
+# changes. It re-runs `sheldon lock` to clone any new plugins and update
+# the lockfile, and then regenerates the ~/.cache/sheldon.zsh source cache
+# consumed by ~/.zshrc.
+#
+# The sha256 below causes chezmoi to detect a change and re-execute this
+# script when plugins.toml changes.
+# plugins.toml sha256: {{ include "dot_config/sheldon/plugins.toml" | sha256sum }}
+
+set -euo pipefail
+
+# Locate sheldon. Prefer $PATH, then the mise shim, then the mise install dir.
+sheldon_bin=""
+if command -v sheldon >/dev/null 2>&1; then
+  sheldon_bin=$(command -v sheldon)
+elif [[ -x "$HOME/.local/share/mise/shims/sheldon" ]]; then
+  sheldon_bin="$HOME/.local/share/mise/shims/sheldon"
+elif [[ -x "$HOME/.local/share/mise/installs/aqua-rossmacarthur-sheldon/latest/sheldon" ]]; then
+  sheldon_bin="$HOME/.local/share/mise/installs/aqua-rossmacarthur-sheldon/latest/sheldon"
+fi
+
+if [[ -z "$sheldon_bin" ]]; then
+  echo "warning: sheldon not found; skipping plugin lock. Install it via 'mise install' first." >&2
+  exit 0
+fi
+
+echo "Locking sheldon plugins with $sheldon_bin ..."
+"$sheldon_bin" lock
+
+# Refresh the cached source script so the next shell starts with the new set.
+cache_dir="${XDG_CACHE_HOME:-$HOME/.cache}"
+mkdir -p "$cache_dir"
+"$sheldon_bin" source 2>/dev/null >| "$cache_dir/sheldon.zsh"
+
+# Invalidate zcompdump so compinit regenerates it with the new fpath on
+# the next interactive shell. compinit -C on next start will rebuild it.
+rm -f -- "${ZSH_COMPDUMP:-$HOME/.zcompdump}" "${ZSH_COMPDUMP:-$HOME/.zcompdump}.zwc"
+
+echo "Sheldon plugins locked and cache refreshed."

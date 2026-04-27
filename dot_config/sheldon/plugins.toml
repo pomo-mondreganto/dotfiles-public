@@ -1,0 +1,77 @@
+# sheldon plugin manifest — loaded by ~/.zshrc via a cached `sheldon source` call.
+# Ordering matters; see inline comments.
+# Managed by chezmoi. Run `sheldon lock --update` to refresh all clones.
+
+shell = "zsh"
+
+# ----------------------------------------------------------------------
+# 1. fpath contributions — must precede compinit.
+# ----------------------------------------------------------------------
+
+[plugins.zsh-completions]
+github = "zsh-users/zsh-completions"
+apply = ["fpath"]
+
+# ----------------------------------------------------------------------
+# 2. Oh-My-Zsh plugins that don't register compdefs.
+#    The ohmyzsh repo is cloned once and reused via `dir = "plugins/X"`.
+#    OMZ's base lib (lib/*.zsh) is intentionally NOT loaded; sane
+#    defaults are set directly in ~/.shell/common.zsh.
+# ----------------------------------------------------------------------
+
+[plugins.omz-colored-man-pages]
+github = "ohmyzsh/ohmyzsh"
+dir = "plugins/colored-man-pages"
+use = ["colored-man-pages.plugin.zsh"]
+
+[plugins.omz-command-not-found]
+github = "ohmyzsh/ohmyzsh"
+dir = "plugins/command-not-found"
+use = ["command-not-found.plugin.zsh"]
+
+[plugins.omz-common-aliases]
+github = "ohmyzsh/ohmyzsh"
+dir = "plugins/common-aliases"
+use = ["common-aliases.plugin.zsh"]
+
+[plugins.omz-sudo]
+github = "ohmyzsh/ohmyzsh"
+dir = "plugins/sudo"
+use = ["sudo.plugin.zsh"]
+
+# ----------------------------------------------------------------------
+# 3. Run compinit here: after fpath is set and any simple plugins that
+#    don't need it, before fzf-tab (which must wrap _main_complete) and
+#    before plugins that register compdefs at source time.
+#    -C skips the security check (saves ~5ms + one getent fork).
+# ----------------------------------------------------------------------
+
+[plugins.compinit]
+inline = 'autoload -Uz compinit && compinit -C -d "${ZSH_COMPDUMP:-$HOME/.zcompdump}"'
+
+# ----------------------------------------------------------------------
+# 4. fzf-tab must come after compinit, before widget-wrapping plugins
+#    (autosuggestions, syntax-highlighting). See fzf-tab README.
+# ----------------------------------------------------------------------
+
+[plugins.fzf-tab]
+github = "Aloxaf/fzf-tab"
+
+# ----------------------------------------------------------------------
+# 5. Autosuggestions must come before syntax-highlighting.
+#    (Both wrap the same ZLE widgets; load order matters per upstream.)
+# ----------------------------------------------------------------------
+
+[plugins.zsh-autosuggestions]
+github = "zsh-users/zsh-autosuggestions"
+
+[plugins.zsh-syntax-highlighting]
+github = "zsh-users/zsh-syntax-highlighting"
+
+# ----------------------------------------------------------------------
+# 6. Prompt.
+# ----------------------------------------------------------------------
+
+[plugins.powerlevel10k]
+github = "romkatv/powerlevel10k"
+
