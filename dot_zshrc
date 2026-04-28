@@ -25,6 +25,15 @@ test -e "$HOME/.shell/eval-cache.zsh" && source "$HOME/.shell/eval-cache.zsh"
 # is invalidated whenever the mise binary is upgraded.
 (( ${+commands[mise]} )) && zcache mise-activate 'mise activate zsh' ${commands[mise]}
 
+# git-gtr (worktree runner) completion. Add its completer to fpath so
+# `gtr <TAB>` and `gtr rm <TAB>` (worktree-id completion) work, and
+# register `gtr` as a git subcommand so `git gtr <TAB>` works too. Both
+# directives must precede sheldon's inline compinit.
+if [[ -d /usr/share/git-gtr/completions ]]; then
+  fpath=(/usr/share/git-gtr/completions $fpath)
+  zstyle ':completion:*:*:git:*' user-commands gtr:'Git worktree runner'
+fi
+
 # Plugin manager: sheldon. We cache `sheldon source`'s output to a plain
 # zsh script and only regenerate it when ~/.config/sheldon/plugins.toml
 # is newer. Steady-state startup then avoids forking the sheldon binary.
