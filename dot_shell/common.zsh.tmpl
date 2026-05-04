@@ -72,6 +72,18 @@ zle -N edit-command-line
 bindkey '^x^e' edit-command-line
 # Shift-Tab: move backwards in the completion menu.
 bindkey "${terminfo[kcbt]:-^[[Z}" reverse-menu-complete
+# Home / End / PageUp / PageDown / Delete. Ubuntu's /etc/zshrc binds these
+# via terminfo; macOS doesn't, so bind explicitly. Covers the common escape
+# sequences (xterm cursor, xterm app mode, rxvt, vt220).
+for k in "${terminfo[khome]}" '^[[H' '^[OH' '^[[1~' '^[[7~'; do
+  [[ -n $k ]] && bindkey "$k" beginning-of-line
+done
+for k in "${terminfo[kend]}" '^[[F' '^[OF' '^[[4~' '^[[8~'; do
+  [[ -n $k ]] && bindkey "$k" end-of-line
+done
+bindkey "${terminfo[kpp]:-^[[5~}" up-line-or-history
+bindkey "${terminfo[knp]:-^[[6~}" down-line-or-history
+bindkey "${terminfo[kdch1]:-^[[3~}" delete-char
 
 # Handy functions (previously from OMZ's lib/functions.zsh).
 # mkdir + cd combined; `take foo/bar/baz` creates the tree and cd's in.
