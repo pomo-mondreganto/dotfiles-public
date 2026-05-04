@@ -29,3 +29,7 @@ talos = "latest"
 http_timeout = "60"
 experimental = true
 idiomatic_version_file_enable_tools = ["node"]
+
+[settings.go]
+# Leave GOBIN alone so `go install` lands in ~/go/bin, not mise's install dir.
+set_gobin = false
