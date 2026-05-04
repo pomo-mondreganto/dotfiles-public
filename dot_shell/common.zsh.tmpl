@@ -84,6 +84,22 @@ done
 bindkey "${terminfo[kpp]:-^[[5~}" up-line-or-history
 bindkey "${terminfo[knp]:-^[[6~}" down-line-or-history
 bindkey "${terminfo[kdch1]:-^[[3~}" delete-char
+# Put the terminal into application-keypad mode while ZLE is active, so the
+# $terminfo escape codes used above match what the terminal actually emits.
+if (( ${+terminfo[smkx]} )) && (( ${+terminfo[rmkx]} )); then
+  function zle-line-init() { echoti smkx; }
+  function zle-line-finish() { echoti rmkx; }
+  zle -N zle-line-init
+  zle -N zle-line-finish
+fi
+# Backspace, Esc-w (kill-region), Esc-l (push line, run ls, restore),
+# Esc-m (copy previous shell word), space (no history expansion). All from
+# OMZ's lib/key-bindings.zsh defaults.
+bindkey '^?' backward-delete-char
+bindkey '\ew' kill-region
+bindkey -s '\el' '^q ls\n'
+bindkey '\em' copy-prev-shell-word
+bindkey ' ' magic-space
 
 # Handy functions (previously from OMZ's lib/functions.zsh).
 # mkdir + cd combined; `take foo/bar/baz` creates the tree and cd's in.
