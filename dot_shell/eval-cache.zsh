@@ -72,13 +72,26 @@ zcache() {
   source $cache
 }
 
-# zcomp: shorthand for caching `<bin> completion zsh` output. Cobra/urfave-style
-# binaries ship that subcommand; we cache the script and source it. Anchored on
-# the binary path so an upgrade invalidates. Silently no-ops for missing binaries.
+# zcomp: write `<bin> completion zsh` output as ~/.zfunc/_<bin> so zsh's
+# compinit picks it up lazily on first tab. Zero work at shell startup once
+# the file is fresh -- only stat()s the binary. Regenerates when the binary
+# is newer than the cached completion file. Each regenerated file bumps
+# global $_zcomp_regenerated; the caller checks that and invalidates
+# ~/.zcompdump so compinit registers the new completer on the next call.
 # Usage: zcomp kubectl helm pinus
 zcomp() {
-  local bin
+  emulate -L zsh
+  # NB: don't `local path` -- $path is zsh's special array form of $PATH.
+  local bin bin_path file zfunc="$HOME/.zfunc"
+  mkdir -p -- "$zfunc"
   for bin in "$@"; do
-    (( ${+commands[$bin]} )) && zcache "$bin" "$bin completion zsh" ${commands[$bin]}
+    bin_path=${commands[$bin]}
+    [[ -n $bin_path ]] || continue
+    file="$zfunc/_$bin"
+    # NB: zsh's -nt returns false when the second file is missing (unlike
+    # bash), so pair with -e for the "file doesn't exist yet" case.
+    if [[ ! -e $file || $bin_path -nt $file ]]; then
+      "$bin" completion zsh > "$file" 2>/dev/null && (( _zcomp_regenerated++ ))
+    fi
   done
 }

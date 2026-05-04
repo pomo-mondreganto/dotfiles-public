@@ -34,6 +34,20 @@ if [[ -d /usr/share/git-gtr/completions ]]; then
   zstyle ':completion:*:*:git:*' user-commands gtr:'Git worktree runner'
 fi
 
+# Lazy completion files for Cobra/urfave-style binaries: zcomp writes the
+# `<bin> completion zsh` output to ~/.zfunc/_<bin>, where compinit picks it
+# up via fpath and autoloads it on first tab. Zero-cost at shell startup
+# once files are fresh -- only stat()s each binary. Universal binaries are
+# listed here; host-local ones go in ~/.shell/pre-sheldon.zsh.
+fpath=("$HOME/.zfunc" $fpath)
+typeset -gi _zcomp_regenerated=0
+zcomp kubectl helm k9s buf crane yq dive omnictl docker
+test -e "$HOME/.shell/pre-sheldon.zsh" && source "$HOME/.shell/pre-sheldon.zsh"
+# Force compinit to rebuild its dump on this shell if any completion file
+# was just regenerated, so the new/freshened completer registers.
+(( _zcomp_regenerated )) && rm -f -- "${ZSH_COMPDUMP:-$HOME/.zcompdump}"{,.zwc}
+unset _zcomp_regenerated
+
 # Plugin manager: sheldon. We cache `sheldon source`'s output to a plain
 # zsh script and only regenerate it when ~/.config/sheldon/plugins.toml
 # is newer. Steady-state startup then avoids forking the sheldon binary.

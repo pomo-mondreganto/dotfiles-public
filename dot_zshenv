@@ -2,3 +2,8 @@ test -e "$HOME/.cargo/env" && . "$HOME/.cargo/env"
 # iTerm2 shell integration is interactive-only; it is sourced from
 # ~/.shell/local.zsh on machines that want it. Keeping it out of .zshenv
 # avoids the cost for every non-interactive `zsh -c ...` subshell.
+
+# Skip Ubuntu's /etc/zsh/zshrc compinit (we run our own via sheldon, after
+# adding ~/.zfunc to fpath). Without this, the system compinit builds a
+# dump without our completers and the later compinit -C reuses it as-is.
+skip_global_compinit=1
