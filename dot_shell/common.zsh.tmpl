@@ -117,9 +117,12 @@ alias egrep='grep -E'
 alias fgrep='grep -F'
 
 # fzf Ctrl+R / Ctrl+T / Alt+C key bindings and completion integration.
-# `fzf --zsh` is the supported entrypoint since fzf 0.48. Cache its output
-# so we only pay for the fzf fork when the fzf binary is upgraded.
 (( ${+commands[fzf]} )) && zcache fzf 'fzf --zsh' ${commands[fzf]}
+
+# Tab completion for Cobra/urfave-style binaries. Each call caches `<bin>
+# completion zsh` output, anchored on the binary's mtime, and is a no-op
+# when the binary isn't installed. Add more here as needed.
+zcomp kubectl helm k9s buf crane yq dive omnictl docker
 
 {{ if eq .chezmoi.os "darwin" }}
 # Cache `brew shellenv` output; invalidate only when brew binary changes.

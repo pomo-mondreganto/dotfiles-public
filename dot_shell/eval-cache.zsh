@@ -71,3 +71,14 @@ zcache() {
 
   source $cache
 }
+
+# zcomp: shorthand for caching `<bin> completion zsh` output. Cobra/urfave-style
+# binaries ship that subcommand; we cache the script and source it. Anchored on
+# the binary path so an upgrade invalidates. Silently no-ops for missing binaries.
+# Usage: zcomp kubectl helm pinus
+zcomp() {
+  local bin
+  for bin in "$@"; do
+    (( ${+commands[$bin]} )) && zcache "$bin" "$bin completion zsh" ${commands[$bin]}
+  done
+}
