@@ -4,108 +4,17 @@ alias pg="pgcli"
 alias reload="source ~/.zshrc"
 alias gsave="git add . && git commit -m 'save'"
 
-# History: effectively unlimited, shared across live sessions.
-# Previously provided by OMZ's lib/history.zsh; now explicit.
+# History size overrides. OMZ's lib/history.zsh sets these only if smaller
+# (see its [-z]/[-lt] checks), so writing larger values here wins. Loaded
+# AFTER sheldon's omz-lib-history, which sets the setopts (EXTENDED_HISTORY,
+# SHARE_HISTORY, HIST_*).
 HISTFILE="$HOME/.zsh_history"
 HISTSIZE=1000000
 SAVEHIST=1000000
-setopt EXTENDED_HISTORY        # Save start time + elapsed duration per entry.
-setopt INC_APPEND_HISTORY_TIME # Append on exec, with EXTENDED_HISTORY timing.
-setopt SHARE_HISTORY           # All live sessions see each other's commands.
-setopt HIST_EXPIRE_DUPS_FIRST  # When trimming to SAVEHIST, expire dups first.
-setopt HIST_IGNORE_DUPS        # Don't record a line matching the previous one.
-setopt HIST_IGNORE_SPACE       # Don't record commands starting with a space.
-setopt HIST_FIND_NO_DUPS       # Don't show duplicates in history-search.
-setopt HIST_VERIFY             # Show !-expansion result for confirmation.
-setopt HIST_REDUCE_BLANKS      # Collapse multiple internal blanks.
 
-# Directory navigation (previously from OMZ's lib/directories.zsh).
-setopt AUTO_CD                 # Typing a dir name cd's into it.
-setopt AUTO_PUSHD              # cd pushes onto the dir stack automatically.
-setopt PUSHD_IGNORE_DUPS       # No duplicates in the dir stack.
-setopt PUSHD_SILENT            # Don't echo the stack after each pushd/popd.
-alias -g ...='../..'           # Two levels up.
-alias -g ....='../../..'       # Three levels up.
-alias -g .....='../../../..'   # Four levels up.
-alias -- -='cd -'              # Quick toggle to previous dir.
-
-# Interactive niceties (previously from OMZ's lib/misc.zsh).
-setopt INTERACTIVE_COMMENTS    # # starts a comment on the command line.
-setopt LONG_LIST_JOBS          # Long-format job notifications.
-setopt MULTIOS                 # echo >file1 >file2 redirects to both.
-alias _='sudo '                # Trailing space lets the next alias expand.
-
-# Completion behaviour (previously from OMZ's lib/completion.zsh).
-zmodload zsh/complist          # Menu-select arrow-key navigation.
-WORDCHARS=''                   # Treat word boundaries strictly (matches OMZ).
-setopt COMPLETE_IN_WORD        # Allow completion from inside a word.
-setopt ALWAYS_TO_END           # After completion, move cursor to end.
-setopt AUTO_MENU               # Show completion menu on second tab.
-unsetopt MENU_COMPLETE         # Don't autoselect the first entry.
-unsetopt FLOW_CONTROL          # Free up ^S / ^Q for binding.
-zstyle ':completion:*' menu select
-zstyle ':completion:*' use-cache yes
-zstyle ':completion:*' cache-path "${XDG_CACHE_HOME:-$HOME/.cache}/zsh"
-zstyle ':completion:*' special-dirs true
-zstyle ':completion:*' matcher-list 'm:{[:lower:][:upper:]}={[:upper:][:lower:]}' 'r:|=*' 'l:|=* r:|=*'
-zstyle ':completion:*' list-colors ''
-zstyle ':completion:*:*:kill:*:processes' list-colors '=(#b) #([0-9]#) ([0-9a-z-]#)*=01;34=0=01'
-zstyle ':completion:*:*:*:*:processes' command "ps -u $USER -o pid,user,comm -w -w"
-
-# Key bindings (previously from OMZ's lib/key-bindings.zsh).
-# Arrow up/down: prefix-aware history search (type "cd ", ↑ shows only cd commands).
-autoload -Uz up-line-or-beginning-search down-line-or-beginning-search
-zle -N up-line-or-beginning-search
-zle -N down-line-or-beginning-search
-bindkey '^[[A' up-line-or-beginning-search
-bindkey '^[[B' down-line-or-beginning-search
-bindkey "${terminfo[kcuu1]:-^[[A}" up-line-or-beginning-search
-bindkey "${terminfo[kcud1]:-^[[B}" down-line-or-beginning-search
-# Ctrl-Arrow: word navigation.
-bindkey '^[[1;5C' forward-word
-bindkey '^[[1;5D' backward-word
-# Ctrl-Delete: kill word forward.
-bindkey '^[[3;5~' kill-word
-# Ctrl-X Ctrl-E: edit the current command line in $EDITOR.
-autoload -Uz edit-command-line
-zle -N edit-command-line
-bindkey '^x^e' edit-command-line
-# Shift-Tab: move backwards in the completion menu.
-bindkey "${terminfo[kcbt]:-^[[Z}" reverse-menu-complete
-# Home / End / PageUp / PageDown / Delete. Ubuntu's /etc/zshrc binds these
-# via terminfo; macOS doesn't, so bind explicitly. Covers the common escape
-# sequences (xterm cursor, xterm app mode, rxvt, vt220).
-for k in "${terminfo[khome]}" '^[[H' '^[OH' '^[[1~' '^[[7~'; do
-  [[ -n $k ]] && bindkey "$k" beginning-of-line
-done
-for k in "${terminfo[kend]}" '^[[F' '^[OF' '^[[4~' '^[[8~'; do
-  [[ -n $k ]] && bindkey "$k" end-of-line
-done
-bindkey "${terminfo[kpp]:-^[[5~}" up-line-or-history
-bindkey "${terminfo[knp]:-^[[6~}" down-line-or-history
-bindkey "${terminfo[kdch1]:-^[[3~}" delete-char
-# Put the terminal into application-keypad mode while ZLE is active, so the
-# $terminfo escape codes used above match what the terminal actually emits.
-if (( ${+terminfo[smkx]} )) && (( ${+terminfo[rmkx]} )); then
-  function zle-line-init() { echoti smkx; }
-  function zle-line-finish() { echoti rmkx; }
-  zle -N zle-line-init
-  zle -N zle-line-finish
-fi
-# Backspace, Esc-w (kill-region), Esc-l (push line, run ls, restore),
-# Esc-m (copy previous shell word), space (no history expansion). All from
-# OMZ's lib/key-bindings.zsh defaults.
-bindkey '^?' backward-delete-char
-bindkey '\ew' kill-region
-bindkey -s '\el' '^q ls\n'
-bindkey '\em' copy-prev-shell-word
-bindkey ' ' magic-space
-
-# Handy functions (previously from OMZ's lib/functions.zsh).
-# mkdir + cd combined; `take foo/bar/baz` creates the tree and cd's in.
-function mkcd take () { mkdir -p -- "$@" && cd -- "${@: -1}"; }
-
-# Colorize ls and grep (previously from OMZ's lib/theme-and-appearance and lib/grep).
+# Colorize ls and grep. OMZ's lib/theme-and-appearance.zsh would do this
+# with a fork-based runtime probe; this is OS-branched at chezmoi-template
+# time, no fork.
 {{ if eq .chezmoi.os "darwin" -}}
 alias ls='ls -G'
 export LSCOLORS="Gxfxcxdxbxegedabagacad"
@@ -201,4 +110,3 @@ gnw () {
   echo "To create remote + set tracking:"
   echo "  (cd \"$dir\" && git push -u origin \"$branch\")"
 }
-

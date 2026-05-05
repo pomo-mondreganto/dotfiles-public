@@ -29,9 +29,11 @@ echo "Locking sheldon plugins with $sheldon_bin ..."
 "$sheldon_bin" lock
 
 # Refresh the cached source script so the next shell starts with the new set.
+# Also pre-compile to .zwc so zsh skips re-parsing on every shell start.
 cache_dir="${XDG_CACHE_HOME:-$HOME/.cache}"
 mkdir -p "$cache_dir"
 "$sheldon_bin" source 2>/dev/null >| "$cache_dir/sheldon.zsh"
+zsh -c "zcompile -- '$cache_dir/sheldon.zsh'"
 
 # Invalidate zcompdump so compinit regenerates it with the new fpath on
 # the next interactive shell. compinit -C on next start will rebuild it.

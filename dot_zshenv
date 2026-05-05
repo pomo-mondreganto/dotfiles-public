@@ -7,3 +7,13 @@ test -e "$HOME/.cargo/env" && . "$HOME/.cargo/env"
 # adding ~/.zfunc to fpath). Without this, the system compinit builds a
 # dump without our completers and the later compinit -C reuses it as-is.
 skip_global_compinit=1
+
+# Pinely's dev docker base image sources /etc/bash_completion.d/hydra from
+# /opt/dev/devdocker-bash-zsh-common.sh (run by /etc/zsh/zshrc), which calls
+# bare `compinit` + bashcompinit to register bash-style completions for
+# twix-* tools. zsh has its own completion system, we don't want bash compat
+# here; stub the calls as no-ops. The sheldon compinit plugin in
+# plugins.toml does `unfunction compinit compdef` before autoloading the
+# real compinit (autoload alone wouldn't override an existing function).
+compinit() { : }
+compdef() { : }

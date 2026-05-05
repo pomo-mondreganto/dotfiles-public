@@ -13,10 +13,41 @@ github = "zsh-users/zsh-completions"
 apply = ["fpath"]
 
 # ----------------------------------------------------------------------
-# 2. Oh-My-Zsh plugins that don't register compdefs.
-#    The ohmyzsh repo is cloned once and reused via `dir = "plugins/X"`.
-#    OMZ's base lib (lib/*.zsh) is intentionally NOT loaded; sane
-#    defaults are set directly in ~/.shell/common.zsh.
+# 2. OMZ base lib pieces that don't depend on compinit. The ohmyzsh repo
+#    is cloned once (see omz-* plugin entries below) and reused via
+#    `dir = "lib"`. We deliberately skip lib/theme-and-appearance.zsh and
+#    lib/grep.zsh (both fork at runtime to probe coreutils flags) plus
+#    a number of OMZ-theme-only files irrelevant with p10k.
+# ----------------------------------------------------------------------
+
+[plugins.omz-lib-history]
+github = "ohmyzsh/ohmyzsh"
+dir = "lib"
+use = ["history.zsh"]
+
+[plugins.omz-lib-directories]
+github = "ohmyzsh/ohmyzsh"
+dir = "lib"
+use = ["directories.zsh"]
+
+[plugins.omz-lib-functions]
+github = "ohmyzsh/ohmyzsh"
+dir = "lib"
+use = ["functions.zsh"]
+
+# Must come after functions.zsh — misc.zsh uses env_default from there.
+[plugins.omz-lib-misc]
+github = "ohmyzsh/ohmyzsh"
+dir = "lib"
+use = ["misc.zsh"]
+
+[plugins.omz-lib-clipboard]
+github = "ohmyzsh/ohmyzsh"
+dir = "lib"
+use = ["clipboard.zsh"]
+
+# ----------------------------------------------------------------------
+# 3. OMZ plugins that don't register compdefs.
 # ----------------------------------------------------------------------
 
 [plugins.omz-colored-man-pages]
@@ -40,17 +71,36 @@ dir = "plugins/sudo"
 use = ["sudo.plugin.zsh"]
 
 # ----------------------------------------------------------------------
-# 3. Run compinit here: after fpath is set and any simple plugins that
-#    don't need it, before fzf-tab (which must wrap _main_complete) and
-#    before plugins that register compdefs at source time.
-#    -C skips the security check (saves ~5ms + one getent fork).
+# 4. Run compinit here: after fpath is set, before fzf-tab (which must
+#    wrap _main_complete) and before plugins that register compdefs at
+#    source time. -C skips the security check (saves ~5ms).
 # ----------------------------------------------------------------------
 
 [plugins.compinit]
-inline = 'autoload -Uz compinit && compinit -C -d "${ZSH_COMPDUMP:-$HOME/.zcompdump}"'
+# unfunction first: dot_zshenv stubs compinit/compdef as no-ops to silence
+# /etc/bash_completion.d/hydra (sourced by /etc/zsh/zshrc); autoload alone
+# won't replace an existing function definition, so the stub would persist.
+inline = 'unfunction compinit compdef 2>/dev/null; autoload -Uz compinit && compinit -C -d "${ZSH_COMPDUMP:-$HOME/.zcompdump}"'
 
 # ----------------------------------------------------------------------
-# 4. fzf-tab must come after compinit, before widget-wrapping plugins
+# 5. OMZ lib pieces that need compinit done. lib/completion.zsh sets
+#    completion zstyles and runs bashcompinit. lib/key-bindings.zsh
+#    registers the up-line-or-beginning-search / edit-command-line
+#    widgets and binds them.
+# ----------------------------------------------------------------------
+
+[plugins.omz-lib-completion]
+github = "ohmyzsh/ohmyzsh"
+dir = "lib"
+use = ["completion.zsh"]
+
+[plugins.omz-lib-key-bindings]
+github = "ohmyzsh/ohmyzsh"
+dir = "lib"
+use = ["key-bindings.zsh"]
+
+# ----------------------------------------------------------------------
+# 6. fzf-tab must come after compinit, before widget-wrapping plugins
 #    (autosuggestions, syntax-highlighting). See fzf-tab README.
 # ----------------------------------------------------------------------
 
@@ -58,7 +108,7 @@ inline = 'autoload -Uz compinit && compinit -C -d "${ZSH_COMPDUMP:-$HOME/.zcompd
 github = "Aloxaf/fzf-tab"
 
 # ----------------------------------------------------------------------
-# 5. Autosuggestions must come before syntax-highlighting.
+# 7. Autosuggestions must come before syntax-highlighting.
 #    (Both wrap the same ZLE widgets; load order matters per upstream.)
 # ----------------------------------------------------------------------
 
@@ -69,9 +119,8 @@ github = "zsh-users/zsh-autosuggestions"
 github = "zsh-users/zsh-syntax-highlighting"
 
 # ----------------------------------------------------------------------
-# 6. Prompt.
+# 8. Prompt.
 # ----------------------------------------------------------------------
 
 [plugins.powerlevel10k]
 github = "romkatv/powerlevel10k"
-
